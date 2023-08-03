@@ -32,6 +32,8 @@ const forFind = (board, toSearch) => {
                 }
             }
 
+            i += 1
+
             searchIndex = (firstIndex + boardLineLength) + (lineJumpCount * boardLineLength + lineJumpCount) + 1
         }
 
@@ -109,14 +111,20 @@ ${result.board.join('')}` : "Introuvable"
 const dataRead = (file) => {
     const fs = require('fs')
     let data
+    let error
 
     try {
         data = fs.readFileSync(file, { encoding: 'utf8' })
     } catch (err) {
-        console.error(err)
+        error = err
     }
 
-    return data
+    if (error !== undefined) {
+        console.log("Une erreur est survenue. Le fichier renseigné n'existe pas dans ce répertoire.")
+        return
+    } else {
+        return data
+    }
 }
 
 /*Gestion des erreurs*/
@@ -125,6 +133,14 @@ const isValidArguments = (arguments) => {
         return arguments
     } else {
         return console.log("Une erreur est survenue. Veuillez renseigner deux arguments.")
+    }
+}
+
+const isValidFile = (file) => {
+    if (file.slice(-4) === ".txt") {
+        return file
+    } else {
+        return console.log("Une erreur est survenue. Ne sont pris en charge qu'uniquement les fichiers dont l'extension est '.txt'.")
     }
 }
 
@@ -142,6 +158,12 @@ const displayForFind = () => {
 
     if (!arguments) {
         return
+    }
+
+    for (file of arguments) {
+        if (!isValidFile(file) || !dataRead(file)) {
+            return
+        }
     }
 
     return console.log(forFind(board, toSearch))
