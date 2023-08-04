@@ -14,7 +14,7 @@ const createBoard = (column, line, density) => {
         board.push('\n')
     }
 
-    board = board
+    board.pop()
     fs.writeFileSync('feu.04.board.txt', board.join(''))
 
 
