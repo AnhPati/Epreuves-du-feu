@@ -2,144 +2,118 @@
 const findBiggestSquare = (board) => {
     const boardData = dataRead(board).split('')
     const boardArray = boardData.slice(boardData.indexOf('\n') + 1)
+    const boardMatrix = getMatrix(boardArray)
     const instructions = boardData.slice(0, boardData.indexOf('\n'))
 
     const boardControllers = {
-        lineLength: Number(instructions[0]) + 1,
+        lineLength: Number(instructions[0]),
         space: instructions[1],
         obstacle: instructions[2],
         fill: instructions[3]
     }
 
-    const squareSizes = []
+    const square = {
+        index: 0,
+        size: 0
+    }
 
-    for (let i = 0; i < boardArray.length; i++) {
-        if (boardArray[i] !== "\n" && boardArray !== boardControllers.obstacle) {
-            squareSizes.push(getSquare(boardArray, i, boardControllers))
+    const tempSquare = {
+        index: 0,
+        size: 0
+    }
+
+    for (let i = 0; i < boardMatrix.length; i++) {
+        for (let j = 0; j < boardMatrix[i].length; j++) {
+            if (j >= boardControllers.lineLength - 1) {
+                break
+            } else if (boardMatrix[i][j] === boardControllers.space) {
+                tempSquare.index = (i * boardControllers.lineLength) + j
+                if (i > 0) {
+                    tempSquare.index = tempSquare.index + (i)
+                }
+                tempSquare.size = getBiggestSquare(boardMatrix, i, j, boardControllers.space)
+
+                if (tempSquare.size > square.size) {
+                    square.index = tempSquare.index
+                    square.size = tempSquare.size
+                }
+            }
+        }
+
+        if (square.size >= boardMatrix.length - i) {
+            break
         }
     }
 
-    console.log()
+    const boardResult = fillSquare(boardArray, square.index, square.size, boardControllers.fill, boardControllers.lineLength + 1)
 
-    return boardArray
+    return boardResult
 }
 
-const buildBiggestSquare = (column, line,) => {
+const getMatrix = (array) => {
+    let index = 0
+    const matrix = []
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] === '\n') {
+            matrix.push(array.slice(index, i))
+            index = i + 1
+        }
+    }
 
+    matrix.push(array.slice(index))
+
+    return matrix
 }
 
-const getSquare = (array, index, controllers) => {
-    let lineFound = {
-        count: 0,
-        beginning: index,
-        end: index + controllers.lineLength
+const fillSquare = (array, index, size, fill, lineLength) => {
+    const arrayFilled = array.slice(0, index)
+    const limit = index + ((lineLength * (size - 1)) + (size - 1))
+    let lineCount = 0
+
+    for (let i = index; i < array.length; i++) {
+        if (array[i] === '\n') {
+            arrayFilled.push(array[i])
+            lineCount += 1
+
+        } else if (i <= limit && (i >= index + (lineCount * lineLength) && i < index + (lineCount * lineLength) + size)) {
+            arrayFilled.push(fill)
+
+        } else {
+            arrayFilled.push(array[i])
+        }
     }
-    let lineInfo = true
 
-    let columnsArray = []
-    columnsArray.push(getColumns(array, index))
-
-    console.log(`\x1b[33mtempIndex des lignes :\x1b[37m ${lineFound.end}`)
-    console.log(`\x1b[33mLongueur du tableau :\x1b[37m ${array.length}`)
-    while (lineInfo !== false && lineFound.end < array.length) {
-        lineFound.count += 1
-        lineInfo = nextLine(array, lineFound.end)
-        columnsArray.push(getColumns(array, lineFound.end))
-        lineFound.end = lineFound.end + controllers.lineLength
-        console.log(`\x1b[34mIndex des lignes :\x1b[37m ${lineFound.end}`)
-    }
-    lineFound.end = lineFound.end - controllers.lineLength
-    console.log(`\x1b[33mCompteur de lignes :\x1b[37m ${lineFound.count}`)
-    console.log(`\x1b[33mIndex des lignes :\x1b[37m ${lineFound.end}`)
-    console.log(`\x1b[33mTableau des colonnes :\x1b[37m`)
-    console.log(columnsArray)
-
-
-    let squareFound = []
-    let indexColumn = columnsArray[0].beginning
-
-    if (lineFound.count > columnsArray.sort((a, b) => a.count - b.count)[0].count) {
-        lineFound.count = columnsArray.sort((a, b) => a.count - b.count)[0].count
-        lineFound.end = lineFound.beginning + (controllers.lineLength * lineFound.count)
-    } else {
-        columnsArray.sort((a, b) => a.count - b.count)[0].count = lineFound.count
-    }
-    columnsArray.sort((a, b) => a.count - b.count)[0].beginning = indexColumn
-    console.log("index : " + columnsArray.sort((a, b) => a.count - b.count)[0].beginning)
-    squareFound.push(columnsArray.sort((a, b) => a.count - b.count)[0])
-    squareFound.push(lineFound)
-
-    return squareFound
+    return arrayFilled
 }
 
-const getColumns = (array, index) => {
-    let columnFound = {
-        count: 0,
-        beginning: index,
-        end: index
-    }
-    let columnInfo = true
+const getBiggestSquare = (matrix, indexLine, indexColumn, space) => {
+    let size = 1
+    let isSquare = false
 
-    while (columnInfo !== false) {
-        columnFound.count += 1
-        columnInfo = nextColumn(array, index + columnFound.count)
-        columnFound.end += 1
-    }
+    for (let h = 0; h < size && h < matrix.length; h++) {
+        for (let i = indexLine; i <= (indexLine + size) && i < matrix.length; i++) {
+            for (let j = indexColumn; j <= (indexColumn + size) && j < matrix[i].length; j++) {
+                if (matrix[i][j] === space && matrix.slice(indexLine).length > size && matrix[i].slice(indexColumn).length > size) {
+                    isSquare = true
+                } else {
+                    isSquare = false
+                    break
+                }
+            }
 
-    columnFound.end = columnFound.end - 1
-    console.log(`\x1b[32mCompteur de colonnes :\x1b[37m ${columnFound.count}`)
-    console.log(`\x1b[32mIndex de début des colonnes :\x1b[37m ${columnFound.beginning}`)
-    console.log(`\x1b[32mIndex de fin des colonnes :\x1b[37m ${columnFound.end}`)
+            if (!isSquare) {
+                break
+            }
+        }
 
-    return columnFound
-}
-
-// const getLines = (array, line, lineLengt) => {
-//     let lineCount = line - line
-//     let tempLine = line + lineLengt
-//     let tempColumns = []
-//     let lineInfo = true
-//     tempColumns.push(getColumns(array, line))
-//     console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
-//     console.log(`\x1b[33mLongueur du tableau :\x1b[37m ${array.length}`)
-//     while (lineInfo !== false && tempLine < array.length) {
-//         lineCount += 1
-//         lineInfo = nextLine(array, tempLine)
-//         tempColumns.push(getColumns(array, tempLine))
-//         tempLine = tempLine + lineLengt
-//         console.log(`\x1b[34mtempLine vaut :\x1b[37m ${tempLine}`)
-//     }
-//     console.log(`\x1b[33mCompteur de lignes :\x1b[37m ${lineCount}`)
-//     console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
-//     console.log(`\x1b[33mIndex des lignes :\x1b[37m ${tempLine}`)
-//     console.log(`\x1b[33mTableaux des colonnes :\x1b[37m ${tempColumns}`)
-
-//     if (lineCount > tempColumns.sort((a, b) => a - b)[0]) {
-//         return tempColumns.sort((a, b) => a - b)[0]
-//     } else {
-//         return lineCount
-//     }
-
-// }
-
-const nextColumn = (array, column) => {
-    let nextColumn = false
-
-    if (array[column] === ".") {
-        nextColumn = true
+        if (isSquare) {
+            size += 1
+        } else {
+            break
+        }
     }
 
-    return nextColumn
-}
-
-const nextLine = (array, line) => {
-    let nextLine = false
-
-    if (array[line] === ".") {
-        nextLine = true
-    }
-
-    return nextLine
+    return size
 }
 
 const dataRead = (file) => {
