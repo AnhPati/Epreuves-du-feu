@@ -11,48 +11,110 @@ const findBiggestSquare = (board) => {
         fill: instructions[3]
     }
 
-    const square = {
-
-    }
+    const squareSizes = []
 
     for (let i = 0; i < boardArray.length; i++) {
-        if (boardArray[i] === "\n") {
+        if (boardArray[i] === "\n" || boardArray === boardControllers.obstacle) {
             i += 1
+
+        } else {
+            squareSizes.push(getSquare(boardArray, i, boardControllers))
+            console.log(`\x1b[33mtempResult vaut :\x1b[37m ${squareSizes}`)
         }
     }
 
-    console.log(boardControllers.lineLength)
-    console.log(boardControllers.space)
-    console.log(boardControllers.obstacle)
-    console.log(boardControllers.fill)
+    console.log(squareSizes)
+
     return boardArray
 }
 
-const getSquare = (boardArray, index, controllers) => {
-    let result = false
+const getSquare = (array, index, controllers) => {
+    let lineCount = 0
+    let tempLine = index + controllers.lineLength
+    let tempColumns = []
+    let lineInfo = true
+    tempColumns.push(getColumns(array, index))
+    console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
+    console.log(`\x1b[33mLongueur du tableau :\x1b[37m ${array.length}`)
+    while (lineInfo !== false && tempLine < array.length) {
+        lineCount += 1
+        lineInfo = nextLine(array, tempLine)
+        tempColumns.push(getColumns(array, tempLine))
+        tempLine = tempLine + controllers.lineLength
+        console.log(`\x1b[34mtempLine vaut :\x1b[37m ${tempLine}`)
+    }
+    console.log(`\x1b[33mCompteur de lignes :\x1b[37m ${lineCount}`)
+    console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
+    console.log(`\x1b[33mIndex des lignes :\x1b[37m ${tempLine}`)
+    console.log(`\x1b[33mTableaux des colonnes :\x1b[37m ${tempColumns}`)
 
-    if (boardArray[index + 1] === ".") {
-        result = true
-
-        if (boardArray[index + controllers.lineLength] === ".") {
-            result = true
-
-            if (boardArray[index + controllers.lineLength + 1] === ".") {
-                result = true
-
-            } else {
-                return result
-            }
-
-        } else {
-            return result
-        }
-
+    if (lineCount > tempColumns.sort((a, b) => a - b)[0]) {
+        return tempColumns.sort((a, b) => a - b)[0]
     } else {
-        return result = false
+        return lineCount
+    }
+}
+
+const getColumns = (array, column) => {
+    let columnCount = column - column
+    let columnInfo = true
+
+    while (columnInfo !== false) {
+        columnCount += 1
+        columnInfo = nextColumn(array, column + columnCount)
+    }
+    console.log(`\x1b[32mCompteur de colonnes :\x1b[37m ${columnCount}`)
+    console.log(`\x1b[32mIndex des colonnes :\x1b[37m ${column}`)
+
+    return columnCount
+}
+
+// const getLines = (array, line, lineLengt) => {
+//     let lineCount = line - line
+//     let tempLine = line + lineLengt
+//     let tempColumns = []
+//     let lineInfo = true
+//     tempColumns.push(getColumns(array, line))
+//     console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
+//     console.log(`\x1b[33mLongueur du tableau :\x1b[37m ${array.length}`)
+//     while (lineInfo !== false && tempLine < array.length) {
+//         lineCount += 1
+//         lineInfo = nextLine(array, tempLine)
+//         tempColumns.push(getColumns(array, tempLine))
+//         tempLine = tempLine + lineLengt
+//         console.log(`\x1b[34mtempLine vaut :\x1b[37m ${tempLine}`)
+//     }
+//     console.log(`\x1b[33mCompteur de lignes :\x1b[37m ${lineCount}`)
+//     console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
+//     console.log(`\x1b[33mIndex des lignes :\x1b[37m ${tempLine}`)
+//     console.log(`\x1b[33mTableaux des colonnes :\x1b[37m ${tempColumns}`)
+
+//     if (lineCount > tempColumns.sort((a, b) => a - b)[0]) {
+//         return tempColumns.sort((a, b) => a - b)[0]
+//     } else {
+//         return lineCount
+//     }
+
+// }
+
+const nextColumn = (array, column) => {
+    let nextColumn = false
+
+    if (array[column] === ".") {
+        nextColumn = true
     }
 
-    return result
+    return nextColumn
+}
+
+const nextLine = (array, line) => {
+    let nextLine = false
+
+    if (array[line] === ".") {
+        nextLine = true
+    }
+
+    return nextLine
 }
 
 const dataRead = (file) => {
