@@ -14,59 +14,84 @@ const findBiggestSquare = (board) => {
     const squareSizes = []
 
     for (let i = 0; i < boardArray.length; i++) {
-        if (boardArray[i] === "\n" || boardArray === boardControllers.obstacle) {
-            i += 1
-
-        } else {
+        if (boardArray[i] !== "\n" && boardArray !== boardControllers.obstacle) {
             squareSizes.push(getSquare(boardArray, i, boardControllers))
-            console.log(`\x1b[33mtempResult vaut :\x1b[37m ${squareSizes}`)
         }
     }
 
-    console.log(squareSizes)
+    console.log()
 
     return boardArray
 }
 
-const getSquare = (array, index, controllers) => {
-    let lineCount = 0
-    let tempLine = index + controllers.lineLength
-    let tempColumns = []
-    let lineInfo = true
-    tempColumns.push(getColumns(array, index))
-    console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
-    console.log(`\x1b[33mLongueur du tableau :\x1b[37m ${array.length}`)
-    while (lineInfo !== false && tempLine < array.length) {
-        lineCount += 1
-        lineInfo = nextLine(array, tempLine)
-        tempColumns.push(getColumns(array, tempLine))
-        tempLine = tempLine + controllers.lineLength
-        console.log(`\x1b[34mtempLine vaut :\x1b[37m ${tempLine}`)
-    }
-    console.log(`\x1b[33mCompteur de lignes :\x1b[37m ${lineCount}`)
-    console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
-    console.log(`\x1b[33mIndex des lignes :\x1b[37m ${tempLine}`)
-    console.log(`\x1b[33mTableaux des colonnes :\x1b[37m ${tempColumns}`)
+const buildBiggestSquare = (column, line,) => {
 
-    if (lineCount > tempColumns.sort((a, b) => a - b)[0]) {
-        return tempColumns.sort((a, b) => a - b)[0]
-    } else {
-        return lineCount
-    }
 }
 
-const getColumns = (array, column) => {
-    let columnCount = column - column
+const getSquare = (array, index, controllers) => {
+    let lineFound = {
+        count: 0,
+        beginning: index,
+        end: index + controllers.lineLength
+    }
+    let lineInfo = true
+
+    let columnsArray = []
+    columnsArray.push(getColumns(array, index))
+
+    console.log(`\x1b[33mtempIndex des lignes :\x1b[37m ${lineFound.end}`)
+    console.log(`\x1b[33mLongueur du tableau :\x1b[37m ${array.length}`)
+    while (lineInfo !== false && lineFound.end < array.length) {
+        lineFound.count += 1
+        lineInfo = nextLine(array, lineFound.end)
+        columnsArray.push(getColumns(array, lineFound.end))
+        lineFound.end = lineFound.end + controllers.lineLength
+        console.log(`\x1b[34mIndex des lignes :\x1b[37m ${lineFound.end}`)
+    }
+    lineFound.end = lineFound.end - controllers.lineLength
+    console.log(`\x1b[33mCompteur de lignes :\x1b[37m ${lineFound.count}`)
+    console.log(`\x1b[33mIndex des lignes :\x1b[37m ${lineFound.end}`)
+    console.log(`\x1b[33mTableau des colonnes :\x1b[37m`)
+    console.log(columnsArray)
+
+
+    let squareFound = []
+    let indexColumn = columnsArray[0].beginning
+
+    if (lineFound.count > columnsArray.sort((a, b) => a.count - b.count)[0].count) {
+        lineFound.count = columnsArray.sort((a, b) => a.count - b.count)[0].count
+        lineFound.end = lineFound.beginning + (controllers.lineLength * lineFound.count)
+    } else {
+        columnsArray.sort((a, b) => a.count - b.count)[0].count = lineFound.count
+    }
+    columnsArray.sort((a, b) => a.count - b.count)[0].beginning = indexColumn
+    console.log("index : " + columnsArray.sort((a, b) => a.count - b.count)[0].beginning)
+    squareFound.push(columnsArray.sort((a, b) => a.count - b.count)[0])
+    squareFound.push(lineFound)
+
+    return squareFound
+}
+
+const getColumns = (array, index) => {
+    let columnFound = {
+        count: 0,
+        beginning: index,
+        end: index
+    }
     let columnInfo = true
 
     while (columnInfo !== false) {
-        columnCount += 1
-        columnInfo = nextColumn(array, column + columnCount)
+        columnFound.count += 1
+        columnInfo = nextColumn(array, index + columnFound.count)
+        columnFound.end += 1
     }
-    console.log(`\x1b[32mCompteur de colonnes :\x1b[37m ${columnCount}`)
-    console.log(`\x1b[32mIndex des colonnes :\x1b[37m ${column}`)
 
-    return columnCount
+    columnFound.end = columnFound.end - 1
+    console.log(`\x1b[32mCompteur de colonnes :\x1b[37m ${columnFound.count}`)
+    console.log(`\x1b[32mIndex de début des colonnes :\x1b[37m ${columnFound.beginning}`)
+    console.log(`\x1b[32mIndex de fin des colonnes :\x1b[37m ${columnFound.end}`)
+
+    return columnFound
 }
 
 // const getLines = (array, line, lineLengt) => {
