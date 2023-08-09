@@ -17,6 +17,7 @@ const findBiggestSquare = (board) => {
         size: 0
     }
 
+<<<<<<< HEAD
     const tempSquare = {
         index: 0,
         size: 0
@@ -46,10 +47,24 @@ const findBiggestSquare = (board) => {
     }
 
     const boardResult = fillSquare(boardArray, square.index, square.size, boardControllers.fill, boardControllers.lineLength + 1)
+=======
+    for (let i = 0; i < boardArray.length; i++) {
+        if (boardArray[i] === "\n" || boardArray === boardControllers.obstacle) {
+            i += 1
+
+        } else {
+            squareSizes.push(getSquare(boardArray, i, boardControllers))
+            console.log(`\x1b[33mtempResult vaut :\x1b[37m ${squareSizes}`)
+        }
+    }
+
+    console.log(squareSizes)
+>>>>>>> parent of 58e4ae8 (Trouver la forme v5)
 
     return boardResult
 }
 
+<<<<<<< HEAD
 const getMatrix = (array) => {
     let index = 0
     const matrix = []
@@ -111,9 +126,99 @@ const getBiggestSquare = (matrix, indexLine, indexColumn, space) => {
         } else {
             break
         }
+=======
+const getSquare = (array, index, controllers) => {
+    let lineCount = 0
+    let tempLine = index + controllers.lineLength
+    let tempColumns = []
+    let lineInfo = true
+    tempColumns.push(getColumns(array, index))
+    console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
+    console.log(`\x1b[33mLongueur du tableau :\x1b[37m ${array.length}`)
+    while (lineInfo !== false && tempLine < array.length) {
+        lineCount += 1
+        lineInfo = nextLine(array, tempLine)
+        tempColumns.push(getColumns(array, tempLine))
+        tempLine = tempLine + controllers.lineLength
+        console.log(`\x1b[34mtempLine vaut :\x1b[37m ${tempLine}`)
+    }
+    console.log(`\x1b[33mCompteur de lignes :\x1b[37m ${lineCount}`)
+    console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
+    console.log(`\x1b[33mIndex des lignes :\x1b[37m ${tempLine}`)
+    console.log(`\x1b[33mTableaux des colonnes :\x1b[37m ${tempColumns}`)
+
+    if (lineCount > tempColumns.sort((a, b) => a - b)[0]) {
+        return tempColumns.sort((a, b) => a - b)[0]
+    } else {
+        return lineCount
+    }
+}
+
+const getColumns = (array, column) => {
+    let columnCount = column - column
+    let columnInfo = true
+
+    while (columnInfo !== false) {
+        columnCount += 1
+        columnInfo = nextColumn(array, column + columnCount)
+>>>>>>> parent of 58e4ae8 (Trouver la forme v5)
+    }
+    console.log(`\x1b[32mCompteur de colonnes :\x1b[37m ${columnCount}`)
+    console.log(`\x1b[32mIndex des colonnes :\x1b[37m ${column}`)
+
+<<<<<<< HEAD
+    return size
+=======
+    return columnCount
+}
+
+// const getLines = (array, line, lineLengt) => {
+//     let lineCount = line - line
+//     let tempLine = line + lineLengt
+//     let tempColumns = []
+//     let lineInfo = true
+//     tempColumns.push(getColumns(array, line))
+//     console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
+//     console.log(`\x1b[33mLongueur du tableau :\x1b[37m ${array.length}`)
+//     while (lineInfo !== false && tempLine < array.length) {
+//         lineCount += 1
+//         lineInfo = nextLine(array, tempLine)
+//         tempColumns.push(getColumns(array, tempLine))
+//         tempLine = tempLine + lineLengt
+//         console.log(`\x1b[34mtempLine vaut :\x1b[37m ${tempLine}`)
+//     }
+//     console.log(`\x1b[33mCompteur de lignes :\x1b[37m ${lineCount}`)
+//     console.log(`\x1b[33mtempLine vaut :\x1b[37m ${tempLine}`)
+//     console.log(`\x1b[33mIndex des lignes :\x1b[37m ${tempLine}`)
+//     console.log(`\x1b[33mTableaux des colonnes :\x1b[37m ${tempColumns}`)
+
+//     if (lineCount > tempColumns.sort((a, b) => a - b)[0]) {
+//         return tempColumns.sort((a, b) => a - b)[0]
+//     } else {
+//         return lineCount
+//     }
+
+// }
+
+const nextColumn = (array, column) => {
+    let nextColumn = false
+
+    if (array[column] === ".") {
+        nextColumn = true
     }
 
-    return size
+    return nextColumn
+}
+
+const nextLine = (array, line) => {
+    let nextLine = false
+
+    if (array[line] === ".") {
+        nextLine = true
+    }
+
+    return nextLine
+>>>>>>> parent of 58e4ae8 (Trouver la forme v5)
 }
 
 const dataRead = (file) => {
