@@ -1,15 +1,8 @@
 /*Fonctions*/
 const buildRectangle = (numbers) => {
-    const horizontalLines = arrayWithNumber(numbers[0])
-    const verticalLines = arrayWithNumber(numbers[1])
+    const horizontalLines = numbers[0]
+    const verticalLines = numbers[1] > 2 ? numbers[1] - 2 : 0
     const sides = builSides(horizontalLines, verticalLines)
-    const indexCorners = []
-
-    sides.forEach((side, index) => {
-        if (side === 'o') {
-            indexCorners.push(index)
-        }
-    })
 
     const filling = []
 
@@ -17,38 +10,45 @@ const buildRectangle = (numbers) => {
         filling.push(" ")
     }
 
-    const topBottom = sides.slice(0, indexCorners[1] + 1).join('')
-    const leftRight = sides.slice(indexCorners[1] + 1).join(`${filling.join('')}|\n`) + `${filling.join('')}|`
-    const rectangle = topBottom.concat('\n', leftRight.concat('\n', topBottom))
+    let topBottom = sides.horizontalSide.join('')
+    let leftRight = sides.verticalSide.length > 0 ? sides.verticalSide.join(`${filling.join('')}|\n`) + `${filling.join('')}|` : null
+    let rectangle = []
+
+    if (leftRight !== null && numbers[0] === 1) {
+        leftRight = leftRight.slice(0, leftRight.length - 1)
+        rectangle = topBottom.concat('\n', leftRight.concat('\n', topBottom))
+
+    } else if (leftRight === null && numbers[1] - 2 === 0) {
+        rectangle = topBottom.concat('\n', topBottom)
+
+    } else if (leftRight !== null) {
+        rectangle = topBottom.concat('\n', leftRight.concat('\n', topBottom))
+
+    } else {
+        rectangle = topBottom
+    }
 
     return rectangle
 }
 
-const arrayWithNumber = (number) => {
-    let newArray = []
-
-    for (let i = 0; i < number; i++) {
-        newArray.push(i)
+const builSides = (horizontalLines, verticalLines) => {
+    let rectangleSides = {
+        horizontalSide: [],
+        verticalSide: []
     }
 
-    return newArray
-}
-
-const builSides = (horizontalLines, verticalLines) => {
-    let rectangleSides = []
-
-    for (const verticalLine of verticalLines) {
-        for (const horizontalLine of horizontalLines) {
-            if (verticalLine === 0) {
-                if (horizontalLine === 0 || horizontalLine === horizontalLines.length - 1) {
-                    rectangleSides.push('o')
-                } else {
-                    rectangleSides.push('-')
-                }
-            }
+    for (let i = 1; i <= horizontalLines; i++) {
+        if (i === 1 || i === horizontalLines) {
+            rectangleSides.horizontalSide.push('o')
+        } else {
+            rectangleSides.horizontalSide.push('-')
         }
+    }
 
-        rectangleSides.push('|')
+    if (verticalLines > 0) {
+        for (let j = 1; j <= verticalLines; j++) {
+            rectangleSides.verticalSide.push('|')
+        }
     }
 
     return rectangleSides
