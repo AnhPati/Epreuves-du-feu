@@ -3,30 +3,26 @@ const findMazePath = (maze) => {
     const mazeData = dataRead(maze).split('')
     const mazeArray = mazeData.slice(mazeData.indexOf('\n') + 1).filter(char => char !== '\r')
     const mazeMatrix = getMatrix(mazeArray)
-    const instructions = mazeData.slice(0, mazeData.indexOf('\r'))
+    const instructions = mazeData.slice(0, mazeData.indexOf('\n'))
     const mazeControllers = {
         entry: instructions[instructions.length - 2],
         exit: instructions[instructions.length - 1],
         path: instructions[instructions.length - 3],
         space: instructions[instructions.length - 4]
     }
-    console.log(`\x1b[31mInstructions : \x1b[37m${instructions}`)
+    console.log(`\x1b[33mInstructions : \x1b[37m`)
     console.log(instructions)
-    console.log(`\x1b[31mPath : \x1b[37m${mazeControllers.path}`)
-    console.log(`\x1b[35mMaze array : \x1b[37m`)
-    console.log(`${mazeArray.join('')}`)
+    console.log(`\x1b[32mControls : \x1b[37m`)
+    console.log(mazeControllers)
 
     const entry = getEntryCoords(mazeMatrix, mazeControllers.entry)
     console.log(`\x1b[34mCoordonnees porte entree : \x1b[37m${entry}`)
     const exits = getExitsCoords(mazeMatrix, mazeControllers.exit)
-    console.log(`\x1b[34mCoordonnees portes sortie : \x1b[37m${exits.join(' / ')}`)
-    console.log(exits)
+    console.log(`\x1b[35mCoordonnees portes sortie : \x1b[37m${exits[0]} et ${exits[1]}`)
 
-    // const theShortestPath = getShortestPath(mazeMatrix, entry, exits, mazeControllers.space, [[], []])
-    // console.log(`\x1b[34mLe plus court chemin : \x1b[37m${theShortestPath.join('')}`)
-    // console.log(theShortestPath)
+    const theShortestPath = getShortestPath(mazeMatrix, entry, exits, mazeControllers)
 
-    return mazeMatrix
+    return theShortestPath
 }
 
 const getMatrix = (array) => {
@@ -46,7 +42,7 @@ const getMatrix = (array) => {
 
 const getEntryCoords = (matrix, entry) => {
     const coords = [0, 0]
-
+    console.log(`\x1b[31mEntree : \x1b[37m${entry}`)
     for (let i = 0; i < matrix.length; i++) {
         for (let j = 0; j < matrix[i].length; j++) {
             if (matrix[i][j] === entry) {
@@ -73,49 +69,65 @@ const getExitsCoords = (matrix, exit) => {
     return coords
 }
 
-const getShortestPath = (matrix, entry, exits, space, actuallyPath) => {
-    const paths = actuallyPath
-    for (let exit of exits) {
-        for (let i = entry[0]; i < matrix.length; i++) {
-            for (let j = entry[1]; j < matrix[i].length; j++) {
-                console.log(`\x1b[32mOu je suis : \x1b[37m${matrix[i][j]} aux coordonnees ${i} et ${j}`)
-                console.log(`\x1b[31mElement a droite : \x1b[37m${matrix[i][j + 1]}`)
-                console.log(`\x1b[31mSpace : \x1b[37m${space}`)
-                if (matrix[i][j + 1] === space) {
-                    console.log(`\x1b[31mOu je suis : \x1b[37m${matrix[i][j + 1]} aux coordonnees ${i} et ${j} et \x1b[31mje suis passe a droite !\x1b[37m`)
-                    console.log(`\x1b[32mPath : \x1b[37m${paths}`)
-                    paths[exits.indexOf(exit)].push([i, j + 1])
-                    getShortestPath(matrix, paths[exits.indexOf(exit)].length - 1, exits, space, paths)
-                } else if (matrix[i + 1][j] === space) {
-                    console.log(`\x1b[33mOu je suis : \x1b[37m${matrix[i][j]} aux coordonnees ${i + 1} et ${j} et \x1b[33mje suis passe en bas !\x1b[37m`)
-                    paths[exits.indexOf(exit)].push([i + 1, j])
-                    i = i + 1
-                    j = j - 1
-                    getShortestPath(matrix, paths[exits.indexOf(exit)].length - 1, exits, space, paths)
-                } else if (matrix[i][j - 1] === space) {
-                    console.log(`\x1b[34mOu je suis : \x1b[37m${matrix[i][j - 1]} aux coordonnees ${i} et ${j} et \x1b[34mje suis passe a gauche !\x1b[37m`)
-                    paths[exits.indexOf(exit)].push([i, j - 1])
-                    j = j - 2
-                    getShortestPath(matrix, paths[exits.indexOf(exit)].length - 1, exits, space, paths)
-                } else if (matrix[i - 1][j] === space) {
-                    console.log(`\x1b[35mOu je suis : \x1b[37m${matrix[i - 1][j]} aux coordonnees ${i} et ${j} et \x1b[35mje suis passeen haut !\x1b[37m`)
-                    paths[exits.indexOf(exit)].push([i - 1, j])
-                    i = i - 1
-                    j = j - 1
-                    getShortestPath(matrix, paths[exits.indexOf(exit)].length - 1, exits, space, paths)
-                } else if ([i, j + 1] === exit || [i + 1, j] === exit || [i, j - 1] === exit || [i - 1, j] === exit) {
-                    paths[exits.indexOf(exit)].push(exit)
-                    console.log(`\x1b[35mNUL\x1b[37m$`)
-                    return paths
-                } else {
-                    console.log(`\x1b[35mTRES NUL\x1b[37m$`)
-                    break
+const getShortestPath = (maze, entry, exits, controls) => {
+    const mazeWithPath = maze
+    const steps = [[-1, 0], [0, 1], [1, 0], [0, -1]]
+    const shortestPath = {
+        minLength: [Infinity],
+        visited: maze.map(a => a.map(b => b = false)),
+        nextPos: [],
+        lastPos: maze.map(a => a.map(b => b = '?')),
+        goodExit: null
+    }
+
+    shortestPath.visited[entry[0]][entry[1]] = true
+    shortestPath.nextPos.push([entry, 0])
+
+    while (shortestPath.nextPos.length > 0) {
+        let [[coord_x, coord_y], mazeLength] = shortestPath.nextPos.shift()
+        console.log(`\x1b[31mCoordonnées : \x1b[37m${coord_x} et ${coord_y}`)
+        if ((coord_x === exits[0][0] && coord_y === exits[0][1]) || (coord_x === exits[1][0] && coord_y === exits[1][1])) {
+            shortestPath.minLength = mazeLength
+            shortestPath.goodExit = [coord_x, coord_y]
+
+            break
+
+        } else {
+            for ([step_x, step_y] of steps) {
+                let neighbor_x = coord_x + step_x
+                let neighbor_y = coord_y + step_y
+
+                if ((maze.length > neighbor_x && neighbor_x >= 0) && (maze.length > neighbor_y && neighbor_y >= 0)) {
+                    if (maze[neighbor_x][neighbor_y] === controls.space || maze[neighbor_x][neighbor_y] === controls.exit) {
+                        if (!shortestPath.visited[neighbor_x][neighbor_y]) {
+                            shortestPath.visited[neighbor_x][neighbor_y] = true
+                            shortestPath.nextPos.push([[neighbor_x, neighbor_y], mazeLength + 1])
+                            shortestPath.lastPos[neighbor_x][neighbor_y] = [coord_x, coord_y]
+                        }
+                    }
                 }
             }
         }
     }
 
-    return paths
+
+
+    if (shortestPath.length !== Infinity && shortestPath.goodExit !== null) {
+        while ((shortestPath.goodExit[0] !== entry[0]) || (shortestPath.goodExit[1] !== entry[1])) {
+            let tempLastPos = shortestPath.lastPos[shortestPath.goodExit[0]][shortestPath.goodExit[1]]
+            mazeWithPath[shortestPath.goodExit[0]][shortestPath.goodExit[1]] = controls.path
+            shortestPath.goodExit = tempLastPos
+        }
+
+        for (let line of mazeWithPath) {
+            line.push('\n')
+        }
+
+        return mazeWithPath.flat().join('')
+
+    } else {
+        return `Ce labyrinthe n'a pas de sortie accessible.`
+    }
 }
 
 const dataRead = (file) => {
